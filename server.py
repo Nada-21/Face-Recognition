@@ -28,6 +28,7 @@ def face_detect(image,scaleFactor,minNeighbors):
 
         face = image[y:y+h, x:x+w]
         face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+        face = cv2.resize(face,(128,128))
         cv2.imwrite("Faces\Face"+str(i)+".jpg",face)
 
     return image
@@ -36,7 +37,7 @@ def face_detect(image,scaleFactor,minNeighbors):
 side = st.sidebar
 uploaded_img =side.file_uploader("Upload Image",type={"png", "jpg", "jfif" , "jpeg"})
 scaleFactor = side.number_input('Scale Factor',min_value=1.00,max_value=50.0, value=1.1,step=0.1)
-minNeighbors = side.number_input('Minimum Neighbors',min_value=1,max_value=50, value=5,step=1)
+minNeighbors = side.number_input('Minimum Neighbors',min_value=1,max_value=50, value=8,step=1)
 
 col1,col2 = st.columns(2)
 col1.title("Input Image")
