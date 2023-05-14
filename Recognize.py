@@ -22,13 +22,13 @@ def griddisplay(image_list):
 train_images = []
 test_images = []
 
-for i in range(0,75):
-    filename = r'C:\cv-task5-1\AllData\TrainingImages\Face' +str(i) + '.jpg'
+for i in range(0,105):
+    filename = r'C:\Users\power\Desktop\cv-task5\AllData\TrainingImages\Face' +str(i) + '.jpg'
     im=Image.open(filename).convert('L')
     im= np.asarray(im,dtype=float)/255.0 
     train_images.append(im)
 
-for filename in glob.glob(r'C:\cv-task5-1\AllData\TestingImages\*.jpg'):
+for filename in glob.glob(r'C:\Users\power\Desktop\cv-task5\AllData\TestingImages\*.jpg'):
     im=Image.open(filename).convert('L')
     im= np.asarray(im,dtype=float)/255.0 
     test_images.append(im)
@@ -98,8 +98,8 @@ def Reconstruct(k):
 #......................................................................................................................................
 def Project(k,zero_mean_test,threshold):
     matrixU = np.zeros((16384,k))
-    c =0
-    name=""
+    c = 0
+    name =""
     Mean, Zero_mean_matrix, u_list = eigen()
     for val in range(k-1,-1,-1):
         matrixU[:,c] = u_list[val].flatten()
@@ -134,20 +134,11 @@ def Project(k,zero_mean_test,threshold):
             name="Mayar"
         elif index in range(60,75):
             name="Ghofran"
-        else:
-            index = -1
-            name = 'Unknown'
+        elif index in range(75,105):
+            name="Unknown"
+    else:
+        index = -1
+        name = 'Unknown'
 
     return name
     
-
-def runs(k):
-    for num in range(0,TestImages_num): # t in test_images:
-        Mean, Zero_mean_matrix, u_list = eigen()
-        t = test_images[num]
-        test = t.flatten()
-        zero_mean_test = test-np.transpose(Mean)
-        name = Project(k,zero_mean_test,80)  #threshold =80
-
-# runs(39)
-

@@ -1,7 +1,6 @@
 import streamlit as st
 import cv2
 from Recognize import *
-import os
 
 st.set_page_config(page_title=" Image Processing", page_icon="📸", layout="wide",initial_sidebar_state="collapsed")
 
@@ -34,7 +33,7 @@ def face_detect(image,scaleFactor,minNeighbors,k):
         face = cv2.resize(face,(128,128))
         cv2.imwrite("Faces\Face"+str(i)+".jpg",face)
 
-        filename = r'C:\cv-task5-1\Faces\Face' +str(i) + '.jpg'
+        filename = r'C:\Users\power\Desktop\cv-task5\Faces\Face' +str(i) + '.jpg'
         detected_face=Image.open(filename).convert('L')
         detected_face= np.asarray(detected_face,dtype=float)/255.0
         FacesImages.append(detected_face)
@@ -45,7 +44,7 @@ def face_detect(image,scaleFactor,minNeighbors,k):
         zero_mean_test = test - np.transpose(Mean)
         name = Project(k,zero_mean_test,80)  #threshold =80
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(image, name, (x-50,y-8), font, 2, (255,0,0), 2)
+        cv2.putText(image, name, (x-70,y-8), font, 2, (255,0,0), 2)
 
 
     return image
@@ -65,7 +64,7 @@ if uploaded_img is not None:
     input_img = cv2.imread(file_path)
     input_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2RGB)
     col1.image(input_img)
-    detected_image = face_detect(input_img, scaleFactor, minNeighbors,39)
+    detected_image = face_detect(input_img, scaleFactor, minNeighbors,103)
     col2.image(detected_image)
 
 
