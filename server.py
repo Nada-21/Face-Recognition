@@ -1,5 +1,7 @@
 import streamlit as st
 import cv2
+from Recognize import *
+import os
 
 st.set_page_config(page_title=" Image Processing", page_icon="📸", layout="wide",initial_sidebar_state="collapsed")
 
@@ -16,7 +18,8 @@ with open("style.css") as source_des:
     st.markdown(f"""<style>{source_des.read()}</style>""", unsafe_allow_html=True)
 
 #...................................................... Face Detection ........................................................................
-def face_detect(image,scaleFactor,minNeighbors):
+FacesImages = []
+def face_detect(image,scaleFactor,minNeighbors,k):
     face_classifier = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
@@ -30,6 +33,20 @@ def face_detect(image,scaleFactor,minNeighbors):
         face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
         face = cv2.resize(face,(128,128))
         cv2.imwrite("Faces\Face"+str(i)+".jpg",face)
+
+        filename = r'C:\cv-task5-1\Faces\Face' +str(i) + '.jpg'
+        detected_face=Image.open(filename).convert('L')
+        detected_face= np.asarray(detected_face,dtype=float)/255.0
+        FacesImages.append(detected_face)
+
+        Mean, Zero_mean_matrix, u_list = eigen()
+        t = FacesImages[i]
+        test = t.flatten()
+        zero_mean_test = test - np.transpose(Mean)
+        name = Project(k,zero_mean_test,80)  #threshold =80
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.putText(image, name, (x-50,y-8), font, 2, (255,0,0), 2)
+
 
     return image
 #.................................................................................................................................................
@@ -48,8 +65,9 @@ if uploaded_img is not None:
     input_img = cv2.imread(file_path)
     input_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2RGB)
     col1.image(input_img)
-    detected_image = face_detect(input_img, scaleFactor, minNeighbors)
+    detected_image = face_detect(input_img, scaleFactor, minNeighbors,39)
     col2.image(detected_image)
+
 
 
 
