@@ -4,20 +4,8 @@ import numpy as np
 from numpy import linalg as la
 from pylab import *
 import matplotlib.pyplot as plt 
+from sklearn.metrics import roc_curve 
 
-#..........................................................................................................................................
-def griddisplay(image_list):
-    rows = int(len(image_list) / 5) 
-    fig1, axes_array = plt.subplots(rows, 5)
-    fig1.set_size_inches(5,5)
-    k=0
-    for row in range(rows):
-        for col in range(5):    
-            im = np.array(Image.fromarray(image_list[k]).resize((100, 100), Image.ANTIALIAS))
-            axes_array[row][col].imshow(im,cmap=plt.cm.gray) 
-            axes_array[row][col].axis('off')
-            k = k+1
-    plt.show()
 #..........................................................................................................................................
 train_images = []
 test_images = []
@@ -113,6 +101,7 @@ def Project(k,zero_mean_test,threshold):
         dist.append(np.linalg.norm(wt_vectors - w.T))
 
     nearest_face = np.argmin(dist)
+    nearest_distance = dist[nearest_face]
     nearest_face_weights = original_w_k[nearest_face]
 
     zero_mean_test =zero_mean_test + np.transpose(Mean)
@@ -140,5 +129,55 @@ def Project(k,zero_mean_test,threshold):
         index = -1
         name = 'Unknown'
 
-    return name
-    
+    return name, nearest_distance
+
+#..................................................................................................................................
+def testing_distance(k, zero_mean_test):
+    matrixU = np.zeros((16384, k))
+    c = 0
+    Mean, Zero_mean_matrix, u_list = eigen()
+    for val in range(k-1, -1, -1):
+        matrixU[:, c] = u_list[val].flatten()
+        c = c + 1
+    w = np.dot(np.transpose(matrixU), np.transpose(zero_mean_test))
+    weights = Reconstruct(k)
+    original_w_k = weights
+    dist = []
+    for wt_vectors in original_w_k:
+        dist.append(np.linalg.norm(wt_vectors-w.T))
+    nearest_face = np.argmin(dist)
+    nearest_distance = dist[nearest_face]
+    return  nearest_distance
+
+
+def create_roc_curve():
+    distances = []
+    labels = []
+    Mean, Zero_mean_matrix, u_list = eigen()
+    for i in range(TrainImages_num):
+        test_image = train_images[i]
+        zero_mean_test = test_image.flatten() - Mean
+        nearest_distance = testing_distance(103, zero_mean_test)
+        distances.append(nearest_distance)
+        if i < 15:
+            labels.append(0)  # Nada
+        elif i < 30:
+            labels.append(1)  # Kareman
+        elif i < 45:
+            labels.append(2)  # Naira
+        elif i < 60:
+            labels.append(3)  # Mayar
+        elif i < 75:
+            labels.append(4)  # Ghofran
+        else:
+            labels.append(5)  # Unknown
+    fpr, tpr, thresholds = roc_curve(labels, distances)
+    fig = plt.figure()
+    plt.plot(fpr, tpr, linestyle='--',color='#d62728',)
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve') 
+    plt.show
+
+
+create_roc_curve()

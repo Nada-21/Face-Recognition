@@ -42,7 +42,7 @@ def face_detect(image,scaleFactor,minNeighbors,k):
         t = FacesImages[i]
         test = t.flatten()
         zero_mean_test = test - np.transpose(Mean)
-        name = Project(k,zero_mean_test,80)  #threshold =80
+        name, nearest_distance = Project(k,zero_mean_test,80)  #threshold =80
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(image, name, (x-70,y-8), font, 2, (255,0,0), 2)
 
