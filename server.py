@@ -2,7 +2,7 @@ import streamlit as st
 import cv2
 from Recognize import *
 
-st.set_page_config(page_title=" Image Processing", page_icon="📸", layout="wide",initial_sidebar_state="collapsed")
+st.set_page_config(page_title=" Image Processing", page_icon="📸", layout="wide")
 
 hide_st_style = """
     <style>
@@ -19,6 +19,7 @@ with open("style.css") as source_des:
 #...................................................... Face Detection ........................................................................
 FacesImages = []
 def face_detect(image,scaleFactor,minNeighbors,k):
+
     face_classifier = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
@@ -42,7 +43,7 @@ def face_detect(image,scaleFactor,minNeighbors,k):
         t = FacesImages[i]
         test = t.flatten()
         zero_mean_test = test - np.transpose(Mean)
-        name, nearest_distance = Project(k,zero_mean_test,80)  #threshold =80
+        name, test_predict = Project(k,zero_mean_test,80)  #threshold =80
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(image, name, (x-70,y-8), font, 2, (255,0,0), 2)
 
@@ -64,7 +65,7 @@ if uploaded_img is not None:
     input_img = cv2.imread(file_path)
     input_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2RGB)
     col1.image(input_img)
-    detected_image = face_detect(input_img, scaleFactor, minNeighbors,103)
+    detected_image = face_detect(input_img, scaleFactor, minNeighbors,90)
     col2.image(detected_image)
 
 
