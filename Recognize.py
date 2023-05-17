@@ -14,13 +14,13 @@ train_images = []
 test_images = []
 
 for i in range(0,90):
-    filename = r'D:\carrie works\programming\cv-task5\AllData\TrainingImages\Face' +str(i) + '.jpg'
+    filename = r'C:\cv-task5-1\AllData\TrainingImages\Face' +str(i) + '.jpg'
     im=Image.open(filename).convert('L')
     im= np.asarray(im,dtype=float)/255.0 
     train_images.append(im)
 
 for i in range(0,60):
-    filename =r'D:\carrie works\programming\cv-task5\AllData\TestingImages\Face' +str(i) + '.jpg'
+    filename =r'C:\cv-task5-1\AllData\TestingImages\Face' +str(i) + '.jpg'
     im=Image.open(filename).convert('L')
     im= np.asarray(im,dtype=float)/255.0 
     test_images.append(im)
