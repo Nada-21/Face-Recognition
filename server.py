@@ -1,6 +1,8 @@
 import streamlit as st
 import cv2
-from Recognize import *
+from Recognize import Project, eigen
+from PIL import Image
+import numpy as np
 
 st.set_page_config(page_title=" Image Processing", page_icon="📸", layout="wide")
 
@@ -34,7 +36,7 @@ def face_detect(image,scaleFactor,minNeighbors,k):
         face = cv2.resize(face,(128,128))
         cv2.imwrite("Faces\Face"+str(i)+".jpg",face)
 
-        filename = r'C:\Users\gufra\OneDrive\Desktop\3rd 2nd term\CV\cv-task5\Faces\Face' +str(i) + '.jpg'
+        filename = r'C:\Users\power\Desktop\cv-task5\Faces\Face' +str(i) + '.jpg'
         detected_face=Image.open(filename).convert('L')
         detected_face= np.asarray(detected_face,dtype=float)/255.0
         FacesImages.append(detected_face)
@@ -43,7 +45,7 @@ def face_detect(image,scaleFactor,minNeighbors,k):
         t = FacesImages[i]
         test = t.flatten()
         zero_mean_test = test - np.transpose(Mean)
-        name, test_predict = Project(k,zero_mean_test,80)  #threshold =80
+        name, test_predict, test_scores = Project(k,zero_mean_test,80)  #threshold =80
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(image, name, (x-70,y-8), font, 2, (255,0,0), 2)
 
@@ -65,7 +67,7 @@ if uploaded_img is not None:
     input_img = cv2.imread(file_path)
     input_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2RGB)
     col1.image(input_img)
-    detected_image = face_detect(input_img, scaleFactor, minNeighbors,90)
+    detected_image = face_detect(input_img, scaleFactor, minNeighbors,180)
     col2.image(detected_image)
 
 

@@ -13,14 +13,14 @@ from sklearn.metrics import roc_curve, auc, RocCurveDisplay
 train_images = []
 test_images = []
 
-for i in range(0,90):
-    filename = r'C:\Users\gufra\OneDrive\Desktop\3rd 2nd term\CV\cv-task5\AllData\TrainingImages\Face' +str(i) + '.jpg'
+for i in range(0,180):
+    filename = r'C:\Users\power\Desktop\cv-task5\AllData\TrainingImages\Face' +str(i) + '.jpg'
     im=Image.open(filename).convert('L')
     im= np.asarray(im,dtype=float)/255.0 
     train_images.append(im)
 
 for i in range(0,60):
-    filename =r'C:\Users\gufra\OneDrive\Desktop\3rd 2nd term\CV\cv-task5\AllData\TestingImages\Face' +str(i) + '.jpg'
+    filename =r'C:\Users\power\Desktop\cv-task5\AllData\TestingImages\Face' +str(i) + '.jpg'
     im=Image.open(filename).convert('L')
     im= np.asarray(im,dtype=float)/255.0 
     test_images.append(im)
@@ -104,11 +104,12 @@ def Reconstruct(k):
 
 #......................................................................................................................................
 test_predict = []
+test_scores = []
 
 def Project(k,zero_mean_test,threshold):
     matrixU = np.zeros((16384,k))
     c = 0
-    name =""
+    name = ""
     Mean, Zero_mean_matrix, u_list = eigen()
     for val in range(k-1,-1,-1):
         matrixU[:,c] = u_list[val].flatten()
@@ -121,43 +122,61 @@ def Project(k,zero_mean_test,threshold):
     for wt_vectors in original_w_k:
         dist.append(np.linalg.norm(wt_vectors - w.T))
 
+    # Step 1: Subtract the smallest distance from each distance in the group
+    min_distance = min(dist)
+    distances_shifted = [d - min_distance for d in dist]   
+    # Step 2: Take the negative of each distance
+    distances_neg = [-d for d in distances_shifted]
+    # Step 3: Apply the softmax function to the negative distances
+    probs = np.exp(distances_neg) / np.sum(np.exp(distances_neg))
+    c1=np.mean(probs[0:30])              
+    c2=np.mean(probs[30:60])
+    c3=np.mean(probs[60:90])
+    c4=np.mean(probs[90:120])
+    c5=np.mean(probs[120:150])
+    c6=np.mean(probs[150:])
+    c1/=(c1+c2+c3+c4+c5+c6)
+    c2/=(c1+c2+c3+c4+c5+c6)
+    c3/=(c1+c2+c3+c4+c5+c6)
+    c4/=(c1+c2+c3+c4+c5+c6)
+    c5/=(c1+c2+c3+c4+c5+c6)
+    c6/=(c1+c2+c3+c4+c5+c6)
+    test_scores.append([c1,c2,c3,c4,c5,c6])
+
     nearest_face = np.argmin(dist)
-    nearest_distance = dist[nearest_face]
     nearest_face_weights = original_w_k[nearest_face]
-
-    zero_mean_test =zero_mean_test + np.transpose(Mean)
-    zero_mean_test = zero_mean_test.reshape(128,128)
-
+    zero_mean_test = zero_mean_test + np.transpose(Mean)
     face = np.dot(nearest_face_weights, np.transpose(matrixU))
     face = face + np.transpose(Mean)
-    reshape_face = face.reshape(128,128)
-
+    reshape_face = face.reshape(128, 128)
+    
     if np.min(dist) < threshold:  
         index = nearest_face
-        if index in range(0,15):
+        if index in range(0,30):
             name="Nada"
             test_predict.append(0)
-        elif index in range(15,30):
+        elif index in range(30,60):
             name="kareman"
             test_predict.append(1)
-        elif index in range(30,45):
+        elif index in range(60,90):
             name="Naira"
             test_predict.append(2)
-        elif index in range(45,60):
+        elif index in range(90,120):
             name="Mayar"
             test_predict.append(3)
-        elif index in range(60,75):
-            name="Ghofran"
+        elif index in range(120,150):
+            name="Ghofran" 
             test_predict.append(4)
-        elif index in range(75,90):
-            name="Unknown"
+        elif index in range(150,180):
+            name="Unknown" 
             test_predict.append(5)
     else:
         index = -1
         name = 'Unknown'
         test_predict.append(5)
 
-    return name, test_predict
+
+    return name, test_predict, test_scores
 
 #.......................... Creating a confusion matrix, which compares the Testing_Labels and Testing_Predicted .........................
 def confusion(labels,predicted):
@@ -173,33 +192,28 @@ def confusion(labels,predicted):
     plt.savefig("Confusion Matrix.jpg")
 
 #.......................................... Creating ROC Curve For Multiclass ......................................................
-def ROC(labels,predicted):
+def ROC(labels,scores):
     # Binarize the output
-    labels = label_binarize(labels, classes=[0, 1, 2, 3, 4, 5])
-    predicted = label_binarize(predicted, classes=[0, 1, 2, 3, 4, 5])
-    n_classes = labels.shape[1]
+    y_test = label_binarize(labels, classes=[0, 1, 2, 3, 4, 5])
+    y_probs=np.array(scores)
+    n_classes = y_test.shape[1]
     target_names=['Nada','Kareman','Naira','Mayar','Ghofran','Unknown']
     fpr = {}
     tpr = {}
     roc_auc ={}
-    lw =2 
+    lw = 2
     for i in range(n_classes):
-        fpr[i], tpr[i], _ = roc_curve(labels[:, i], predicted[:, i])
+        fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_probs[:, i])
         roc_auc[i] = auc(fpr[i], tpr[i])
-
     colors = cycle(['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink'])
     fig, ax = plt.subplots(figsize=(10, 10))
-
     for i, color in zip(range(n_classes), colors):
         RocCurveDisplay.from_predictions(
-            labels[:, i],
-            predicted[:, i],
-            name=f"ROC curve for {target_names[i]}",
-            color=color,ax=ax
-        )
+            y_test[:, i],
+            y_probs[:, i],
+            name=f"ROC curve for {target_names[i]}",color=color,ax=ax)
+
     plt.plot([0, 1], [0, 1], 'k--', lw=lw)
-    plt.xlim([-0.05, 1.0])
-    plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.title('Receiver operating characteristic for multi-class data')
@@ -211,7 +225,7 @@ for num in range(TestImages_num):
     t = test_images[num]
     test = t.flatten()
     zero_mean_test = test - np.transpose(Mean)
-    name, test_predict = Project(90, zero_mean_test, 80)  # threshold = 80
+    name, test_predict, test_scores = Project(180, zero_mean_test, 80)  # threshold = 80
 
 confusion(test_labels,test_predict)
-ROC(test_labels,test_predict)
+ROC(test_labels,test_scores)
