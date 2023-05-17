@@ -34,7 +34,7 @@ def face_detect(image,scaleFactor,minNeighbors,k):
         face = cv2.resize(face,(128,128))
         cv2.imwrite("Faces\Face"+str(i)+".jpg",face)
 
-        filename = r'C:\cv-task5-1\Faces\Face' +str(i) + '.jpg'
+        filename = r'C:\Users\gufra\OneDrive\Desktop\3rd 2nd term\CV\cv-task5\Faces\Face' +str(i) + '.jpg'
         detected_face=Image.open(filename).convert('L')
         detected_face= np.asarray(detected_face,dtype=float)/255.0
         FacesImages.append(detected_face)
